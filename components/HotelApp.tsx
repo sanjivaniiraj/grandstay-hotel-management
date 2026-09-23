@@ -58,8 +58,8 @@ export default function HotelApp(){
  useEffect(()=>{if(logged){localStorage.setItem("grandstay_reservations",JSON.stringify(reservations));localStorage.setItem("grandstay_rooms",JSON.stringify(rooms));}},[logged,reservations,rooms]);
  const notify=(m:string)=>{setToast(m);setTimeout(()=>setToast(""),2400)};
  const login=async(email:string,password:string)=>{try{const r=await fetch("/api/auth/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email,password})});if(r.ok){setLogged(true);notify("Welcome to GrandStay");return true}}catch{}return false};
- if(!logged)return <Login onLogin={login}/>;
  const filtered=useMemo(()=>{const q=query.trim().toLowerCase();return q?reservations.filter(r=>`${r.id} ${r.guest} ${r.email} ${r.room} ${r.status}`.toLowerCase().includes(q)):reservations},[reservations,query]);
+ if(!logged)return <Login onLogin={login}/>;
  const updateStatus=(id:number,status:Status)=>{setReservations(rs=>rs.map(r=>r.id===id?{...r,status}:r));notify(`Reservation #${id} marked ${status}`)};
  const saveReservation=(r:Reservation)=>{setReservations(rs=>[r,...rs]);setRooms(rs=>rs.map(x=>x.number===r.room?{...x,status:"Reserved",guest:r.guest}:x));setShowNew(false);notify(`Reservation #${r.id} created`)}
  const changeRoom=(num:string,status:RoomStatus)=>{setRooms(rs=>rs.map(r=>r.number===num?{...r,status}:r));notify(`Room ${num} updated`)};

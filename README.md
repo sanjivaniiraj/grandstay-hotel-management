@@ -1,42 +1,69 @@
-# GrandStay Hotel Management — Pro HMS
+# GrandStay Hotel Management Pro
 
-A polished, responsive hotel-management starter rebuilt from the supplied project.
+A Next.js hotel management + guest booking experience with separate admin authentication, customer registration/login, Google OAuth, persistent Supabase bookings, room photography, and optional Razorpay checkout.
 
-## Included
-- GrandStay branding and premium hospitality UI
-- Dashboard with occupancy, revenue and room snapshots
-- Reservations: create, search, check-in/out/status changes, overlap validation
-- Rooms: visual room cards with hotel/room photography and live status controls
-- Customers: guest directory from reservations
-- Payments: collect outstanding balance and payment ledger
-- CSV export for reservations, payments and reports
-- Reports/analytics
-- Settings with persisted hotel profile
-- Responsive desktop/tablet/mobile navigation
-- Server-side credential verification through Next.js API routes with an HttpOnly session cookie
-- Browser persistence for the starter reservation/room workspace
+## Local setup
 
-## Login
-Default development credentials:
-- Email: `admin@grandstay.com`
-- Password: `GrandStay@123`
-
-For deployment, set:
-`ADMIN_EMAIL`
-`ADMIN_PASSWORD`
-`AUTH_SECRET`
-
-See `.env.example`.
-
-## Run
 ```bash
 npm install
 npm run dev
 ```
 
-Then open http://localhost:3000.
+Copy `.env.example` to `.env.local` and configure the values below.
 
-## Production note
-The authentication endpoint is real server-side credential verification, but the hotel data in this starter is stored in the browser. For a multi-user production HMS, connect the existing UI to Supabase/Postgres, Firebase, or your own database/API and replace the starter credentials with managed user accounts. Payment collection is represented as a ledger action; connect Stripe/Razorpay/etc. before charging real cards.
+## Admin login
 
-Images use curated Unsplash-hosted hospitality photography. Replace URLs with your licensed hotel photography for production.
+Admin credentials are intentionally separate from guest accounts:
+
+- `ADMIN_EMAIL`
+- `ADMIN_PASSWORD`
+- `AUTH_SECRET`
+
+Set these in Vercel Environment Variables for Production.
+
+## Guest authentication + bookings
+
+Create a Supabase project at https://supabase.com/ and add:
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=...
+NEXT_PUBLIC_SUPABASE_ANON_KEY=...
+```
+
+Run `supabase-schema.sql` in the Supabase SQL Editor. This creates profiles, bookings and RLS policies.
+
+### Google login
+
+In Supabase: Authentication → Providers → Google. Add your Google OAuth client ID/secret and configure the callback URL shown by Supabase. Add your deployed GrandStay URL to Supabase's allowed redirect URLs.
+
+### Email/password registration
+
+Supabase Authentication → Providers → Email should be enabled. If email confirmation is enabled, new users receive a confirmation email before signing in.
+
+## Payments
+
+The guest checkout supports **Pay at hotel** immediately. For online Card / UPI / NetBanking checkout, configure Razorpay:
+
+```env
+RAZORPAY_KEY_ID=...
+RAZORPAY_KEY_SECRET=...
+NEXT_PUBLIC_RAZORPAY_KEY_ID=...
+```
+
+The app creates and verifies Razorpay orders server-side before saving the booking as paid.
+
+For Vercel, add all environment variables under Production (and Preview/Development if desired), then redeploy after changing them.
+
+## Deploy to Vercel
+
+1. Push the project root to GitHub. `package.json` must be at the repository root.
+2. Import the repository into Vercel.
+3. Framework: Next.js.
+4. Root Directory: `./`.
+5. Build command: `next build`.
+6. Add the environment variables above.
+7. Deploy.
+
+## Important
+
+The admin PMS starter data remains browser-local for the front desk screens. Customer accounts and customer bookings are persistent in Supabase. For a fully shared PMS across multiple staff devices, the admin reservations/rooms should also be migrated to Supabase tables with staff roles and RLS.
